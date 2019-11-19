@@ -4,6 +4,6 @@ classic.json*
 modern.json*
 .sencha
 *.log
-**/build
+build/*
 .idea
 build.xml

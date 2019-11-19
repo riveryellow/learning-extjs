@@ -40,36 +40,63 @@ var data = [
     ['3025', 'name5', 'male', 'descn5', '1970-01-15T02:58:09']
 ];
 
-var store = Ext.create(Ext.data.ArrayStore, {
-    data: data,
-    fields: [
-        { name: 'id' },
-        { name: 'name' },
-        { name: 'sex' },
-        { name: 'descn' },
-        { name: 'date' }
-    ]
-});
-
-// var store = new Ext.data.Store({
-//     proxy: new Ext.data.ScriptTagProxy({ url: '/mock/gridpanel3-1.json' }),
-//     reader: new Ext.data.ArrayReader({}, [
-//         {name: 'id'},
-//         {name: 'name'},
-//         {name: 'descn'}
-//     ]),
+// var store = Ext.create(Ext.data.ArrayStore, {
+//     data: data,
 //     fields: [
 //         { name: 'id' },
 //         { name: 'name' },
-//         { name: 'descn' }
-//     ]
+//         { name: 'sex' },
+//         { name: 'descn' },
+//         { name: 'date' }
+//     ],
 // });
+
+// read local json file
+var store = new Ext.data.JsonStore({
+    proxy: {
+        type: 'ajax',
+        reader: {
+            type: 'json',
+            rootProperty: 'data',
+            totalProperty: 'totalProperty'
+        },
+        url: '/mock/gridpanel3-1.json'
+    },
+    fields: [
+        'id', 'name', 'sex', 'descn', 'date'
+    ],
+    root: 'data',
+    autoLoad: false
+});
+
+// 前端分页
+// var store = Ext.create("Ext.data.Store", {
+//     pageSize: 3,
+//     proxy: {
+//         type: 'memory',
+//         reader: {
+//             type: 'json',
+//         },
+//         url: '/mock/gridpanel3-1.json',
+//         enablePaging: true
+//     },
+//     data: data,
+//     fields: [
+//         'id', 'name', 'sex', 'descn', 'date'
+//     ],
+//     root: 'data',
+//     autoLoad: true
+// });
+
 
 Ext.define('Ext6.demo.view.main.try.GridPanel', {
     extend: Ext.grid.Panel,
     xtype: 'gridPanel3-1',
     title: 'gridPanel3-1',
-    autoHeight: true,
+    layout: 'fit',
+    height: window.innerHeight * 0.85,
+    autoScroll: true,
+    region: 'center',
     // 是否允许改变列宽
     enableColumnResize: false,
     // 是否允许拖放列
@@ -106,21 +133,45 @@ Ext.define('Ext6.demo.view.main.try.GridPanel', {
             }
         }
     },
-    //FIXME not working
+    
+    // not working
     viewConfig: {
         columnsText: '显示的列',
-        scrollOffset: 0,
         sortAscText: '升序',
         sortDescText: '降序',
         forceFit: true
     },
     // 分页
-    bbar: Ext.create('Ext.PagingToolbar', {
-        pageSize: 10,
-        store: store,
-        displayInfo: true,
-        displayMsg: '显示第 {0} 条到第 {1} 条记录， 一共 {2} 条',
-        emptyMsg: '没有记录'
-    })
+    dockedItems: [
+        {
+            xtype: 'pagingtoolbar',
+            store: store,
+            // top/bottom/left/right
+            dock: 'bottom',
+            displayInfo: true,
+            plugins: [{
+                ptype: 'pagingtoolbarresizer',
+            }
+            ]
+        }
+    ]
 });
-store.load();
+
+// 前端多重排序
+store.sort([
+    {
+        property: 'date',
+        direction: 'DESC'
+    },
+    {
+        property: 'id',
+        direction: 'ASC'
+    }
+]);
+
+store.load({
+    params: {
+        start: 2,
+        limit: 10
+    }
+});
